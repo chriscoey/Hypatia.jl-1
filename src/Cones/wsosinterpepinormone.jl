@@ -220,7 +220,7 @@ end
 function is_dual_feas(cone::WSOSInterpEpiNormOne{T}) where {T}
     # condition is necessary but not sufficient for dual feasibility
     @views p1 = cone.dual_point[1:(cone.U)]
-    return all(>(eps(T)), p1)
+    return all(>(0), p1)
 end
 
 function update_grad(cone::WSOSInterpEpiNormOne)

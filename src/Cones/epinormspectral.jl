@@ -167,18 +167,18 @@ end
 
 function is_dual_feas(cone::EpiNormSpectral{T}) where {T <: Real}
     u = cone.dual_point[1]
-    (u > eps(T)) || return false
+    (u > 0) || return false
     @views W = vec_copyto!(cone.w1, cone.dual_point[2:end])
 
     # fast bounds: frob <= nuc <= frob * rtd1
     frob = norm(W, 2)
-    (u - sqrt(T(cone.d1)) * frob > eps(T)) && return true
-    (u - frob > eps(T)) || return false
+    (u - sqrt(T(cone.d1)) * frob > 0) && return true
+    (u - frob > 0) || return false
 
     # final feasibility check: nuc = tr(sqrt(W*W')), rescale W*W' by inv(u)
     mul!(cone.U1, W, W', inv(u), false)
     λ = eigvals!(Hermitian(cone.U1, :U))
-    return (sqrt(u) - sum(sqrt(abs(λ_i)) for λ_i in λ) > eps(T))
+    return (sqrt(u) - sum(sqrt(abs(λ_i)) for λ_i in λ) > 0)
 end
 
 function update_grad(cone::EpiNormSpectral{T}) where {T}

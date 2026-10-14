@@ -82,10 +82,10 @@ function is_dual_feas(cone::HypoPerLog{T}) where {T <: Real}
     u = cone.dual_point[1]
     @views w = cone.dual_point[3:end]
 
-    if all(>(eps(T)), w) && u < -eps(T)
+    if all(>(0), w) && u < 0
         v = cone.dual_point[2]
         sumlog = sum(log(w_i / -u) for w_i in w)
-        return (v - u * (sumlog + length(w)) > eps(T))
+        return (v - u * (sumlog + length(w)) > 0)
     end
 
     return false

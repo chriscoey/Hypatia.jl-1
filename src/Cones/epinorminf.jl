@@ -115,13 +115,13 @@ end
 function is_dual_feas(cone::EpiNormInf{T}) where {T}
     dp = cone.dual_point
     u = dp[1]
-    if u > eps(T)
+    if u > 0
         if cone.is_complex
             @inbounds norm1 = sum(hypot(dp[2i], dp[2i + 1]) for i in 1:(cone.d))
         else
             @views norm1 = sum(abs, dp[2:end])
         end
-        return (u - norm1 > eps(T))
+        return (u - norm1 > 0)
     end
     return false
 end

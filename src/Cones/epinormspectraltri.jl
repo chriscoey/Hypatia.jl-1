@@ -155,17 +155,17 @@ end
 
 function is_dual_feas(cone::EpiNormSpectralTri{T}) where {T <: Real}
     u = cone.dual_point[1]
-    (u > eps(T)) || return false
+    (u > 0) || return false
     @views W = svec_to_smat!(cone.w1, cone.dual_point[2:end], cone.rt2)
     copytri!(W, 'U', true)
 
     # fast bounds: frob <= nuc <= frob * rtd
     frob = norm(W, 2)
-    (u - sqrt(T(cone.d)) * frob > eps(T)) && return true
-    (u - frob > eps(T)) || return false
+    (u - sqrt(T(cone.d)) * frob > 0) && return true
+    (u - frob > 0) || return false
 
     # final feasibility check
-    return (u - sum(abs, eigvals!(Hermitian(W, :U))) > eps(T))
+    return (u - sum(abs, eigvals!(Hermitian(W, :U))) > 0)
 end
 
 function update_grad(cone::EpiNormSpectralTri{T}) where {T}

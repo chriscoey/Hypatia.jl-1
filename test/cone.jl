@@ -55,6 +55,13 @@ function test_oracles(
     @test Cones.get_proxsqr(cone, one(T), true) <= 1 # max proximity
     @test Cones.get_proxsqr(cone, one(T), false) <= dim # sum proximity
 
+    # the dual cone is invariant to positive scaling
+    for t in (eps(T), inv(eps(T)))
+        Cones.load_dual_point(cone, t * dual_point)
+        @test Cones.is_dual_feas(cone)
+    end
+    Cones.load_dual_point(cone, dual_point)
+
     # test centrality of initial point
     if isfinite(init_tol)
         @test point ≈ dual_point atol = init_tol rtol = init_tol

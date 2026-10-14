@@ -59,7 +59,7 @@ function update_feas(cone::Nonnegative{T}) where {T}
     return cone.is_feas
 end
 
-is_dual_feas(cone::Nonnegative{T}) where {T} = all(>(eps(T)), cone.dual_point)
+is_dual_feas(cone::Nonnegative{T}) where {T} = all(>(0), cone.dual_point)
 
 function update_grad(cone::Nonnegative)
     @assert cone.is_feas

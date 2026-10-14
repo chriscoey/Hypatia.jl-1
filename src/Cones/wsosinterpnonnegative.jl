@@ -129,7 +129,7 @@ end
 
 function is_dual_feas(cone::WSOSInterpNonnegative{T}) where {T}
     # condition is necessary but not sufficient for dual feasibility
-    return all(>(eps(T)), cone.dual_point)
+    return all(>(0), cone.dual_point)
 end
 
 function update_grad(cone::WSOSInterpNonnegative)

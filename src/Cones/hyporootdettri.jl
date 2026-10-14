@@ -120,11 +120,11 @@ end
 function is_dual_feas(cone::HypoRootdetTri{T}) where {T <: Real}
     u = cone.dual_point[1]
 
-    if u < -eps(T)
+    if u < 0
         @views svec_to_smat!(cone.mat2, cone.dual_point[2:end], cone.rt2)
         fact = cholesky!(Hermitian(cone.mat2, :U), check = false)
         if isposdef(fact)
-            return (exp(cone.di * logdet(fact)) + cone.di * u > eps(T))
+            return (exp(cone.di * logdet(fact)) + cone.di * u > 0)
         end
     end
 

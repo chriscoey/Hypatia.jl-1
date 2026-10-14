@@ -91,9 +91,9 @@ function is_dual_feas(cone::EpiPerSquare{T}) where {T}
     u = cone.dual_point[1]
     v = cone.dual_point[2]
 
-    if u > eps(T) && v > eps(T)
+    if u > 0 && v > 0
         @views w = cone.dual_point[3:end]
-        return (u * v - sum(abs2, w) / 2 > eps(T))
+        return (u * v - sum(abs2, w) / 2 > 0)
     end
 
     return false
