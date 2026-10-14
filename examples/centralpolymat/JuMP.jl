@@ -52,8 +52,10 @@ end
 
 function test_extra(inst::CentralPolyMatJuMP{T}, model::JuMP.Model) where {T}
     stat = JuMP.termination_status(model)
-    @test stat == MOI.OPTIMAL
-    (stat == MOI.OPTIMAL) || return
+    # tau gets small on some instances, which may only reach near optimality
+    is_opt = (stat in (MOI.OPTIMAL, MOI.ALMOST_OPTIMAL))
+    @test is_opt
+    is_opt || return
 
     # check objective
     tol = eps(T)^0.2

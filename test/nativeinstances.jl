@@ -1419,7 +1419,8 @@ function matrixepipersquare3(T; options...)
         for use_dual in (false, true)
             cones = Cone{T}[Cones.MatrixEpiPerSquare{T, R}(Xn, Xm, use_dual = use_dual)]
             r = build_solve_check(c, A, b, G, h, cones, tol; options...)
-            @test r.status == Solvers.Optimal
+            # no strictly feasible point, so tau goes to zero and optimality may not be certified
+            @test r.status in (Solvers.Optimal, Solvers.NearOptimal, Solvers.SlowProgress)
             @test norm(r.x) ≈ 0 atol = 2tol rtol = 2tol
         end
     end
@@ -1805,7 +1806,8 @@ function hyporootdettri3(T; options...)
         cones = Cone{T}[Cones.HypoRootdetTri{T, R}(dim)]
 
         r = build_solve_check(c, A, b, G, h, cones, tol; options...)
-        @test r.status == Solvers.Optimal
+        # no strictly feasible point, so tau goes to zero and optimality may not be certified
+        @test r.status in (Solvers.Optimal, Solvers.NearOptimal, Solvers.SlowProgress)
         @test r.primal_obj ≈ 0 atol = tol rtol = tol
         @test r.x[1] ≈ zero(T) atol = tol rtol = tol
     end
