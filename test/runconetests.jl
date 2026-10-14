@@ -108,6 +108,15 @@ sep_spectral_funs = [
         point = vcat(u, diag_svec(λ_V), diag_svec(λ_W))
         trrelent(T) = Cones.EpiTrRelEntropyTri{T, T}(13)
         test_oracles_vs_bigfloat(trrelent, point, randn(13), 1e-12)
+
+        # W does not commute with V
+        Q = Matrix(qr(randn(3, 3)).Q)
+        W = Symmetric(Q * Diagonal([2.0, 1, 3]) * Q')
+        λ_V = [1, 1 + 3.4e-4, 1 + 6.6e-4]
+        u = tr(W * (log(W) - Diagonal(log.(λ_V)))) + 1
+        W_svec = Cones.smat_to_svec!(zeros(6), Matrix(W), rt2)
+        point = vcat(u, diag_svec(λ_V), W_svec)
+        test_oracles_vs_bigfloat(trrelent, point, randn(13), 1e-7)
     end
 
     # println("\nstarting barrier tests")
