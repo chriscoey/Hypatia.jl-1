@@ -43,7 +43,7 @@ function permute_affine(cone::SpecNucCone, func::VAF{T}) where {T}
         end
         (col_old, row_old) = divrem(i - 2, cone.row_dim)
         k_idx = row_old * cone.column_dim + col_old + 2
-        idxs_new[k] = terms[k_idx].output_index
+        idxs_new[k] = k_idx
     end
     return idxs_new
 end
