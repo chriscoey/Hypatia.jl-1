@@ -704,7 +704,8 @@ function check_converged(solver::Solver{T}, check_near::Bool = false) where {T <
     worst_feas = max(solver.x_feas, solver.y_feas, solver.z_feas)
     is_feas = (worst_feas <= near_factor * solver.tol_feas)
     if is_feas
-        is_abs_opt = (solver.gap <= near_factor * solver.tol_abs_opt)
+        # s'z / tau^2 is the complementarity of the solution (x, y, z, s) / tau
+        is_abs_opt = (solver.gap <= near_factor * solver.tol_abs_opt * abs2(tau))
         worst_gap = min(solver.gap / tau, abs(primal_obj_t - dual_obj_t))
         max_tau_obj = max(tau, min(abs(primal_obj_t), abs(dual_obj_t)))
         is_rel_opt = (worst_gap <= near_factor * solver.tol_rel_opt * max_tau_obj)
