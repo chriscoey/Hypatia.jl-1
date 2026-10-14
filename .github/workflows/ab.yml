@@ -10,6 +10,7 @@ jobs:
       fail-fast: false
       matrix:
         arm: [base, head]
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v7
         with:
@@ -25,9 +26,11 @@ jobs:
           version: '1'
       - uses: julia-actions/cache@v3
       - run: julia --project=hyp/examples -e 'using Pkg; Pkg.instantiate(); Pkg.develop(PackageSpec(path="hyp"))'
-      - run: julia --project=hyp/examples drv/ab/ab_examples.jl hyp ab-${{ matrix.arm }}.csv ${{ steps.cfg.outputs.filter }}
+      - run: julia --project=hyp/examples drv/ab/ab_examples.jl hyp ab-${{ matrix.arm }}-${{ matrix.shard }}.csv ${{ steps.cfg.outputs.filter }}
+        env:
+          AB_SHARD: ${{ matrix.shard }}/4
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: ab-${{ matrix.arm }}
-          path: ab-${{ matrix.arm }}.csv
+          name: ab-${{ matrix.arm }}-${{ matrix.shard }}
+          path: ab-${{ matrix.arm }}-${{ matrix.shard }}.csv

@@ -54,6 +54,11 @@ for ex in ("experimentdesign", "covarianceest", "centralpolymat")
         end
     end
 end
+unique!(j -> (j[1], j[4]), jobs)
+if haskey(ENV, "AB_SHARD")
+    (k, n) = parse.(Int, split(ENV["AB_SHARD"], '/'))
+    jobs = jobs[k:n:end]
+end
 println(length(jobs), " instances")
 get(ENV, "AB_DRY", "") == "1" && (foreach(j -> println(j[1], " ", j[2], " ", j[4]), jobs); exit())
 haskey(ENV, "AB_LIMIT") && (jobs = jobs[1:parse(Int, ENV["AB_LIMIT"])])
