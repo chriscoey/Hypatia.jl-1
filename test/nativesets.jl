@@ -9,7 +9,14 @@ file in the root directory or at https://github.com/jump-dev/Hypatia.jl
 sets of native test instances
 =#
 
-inst_preproc = ["dimension1", "consistent1", "inconsistent1", "inconsistent2"]
+inst_preproc = [
+    "dimension1",
+    "consistent1",
+    "consistent3",
+    "consistent4",
+    "inconsistent1",
+    "inconsistent2",
+]
 
 inst_infeas = [
     "primalinfeas1",

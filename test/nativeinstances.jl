@@ -147,6 +147,61 @@ function consistent1(T; options...)
     @test r.status == Solvers.Optimal
 end
 
+function consistent3(T; solver = Solvers.Solver{T}())
+    # min cost flow: the node balance rows are dependent, and scaling the
+    # supplies by a > 0 scales the optimal value by a
+    Random.seed!(1)
+    num_nodes = 10
+    arcs = [(i, j) for i in 1:num_nodes for j in 1:num_nodes if i != j]
+    A = zeros(T, num_nodes, length(arcs))
+    for (k, (i, j)) in enumerate(arcs)
+        A[i, k] = 1
+        A[j, k] = -1
+    end
+    b = randn(T, num_nodes)
+    b[end] = -sum(b[1:(end - 1)])
+    c = rand(T, length(arcs))
+    G = Matrix{T}(-I, length(arcs), length(arcs))
+    h = zeros(T, length(arcs))
+    cones = Cone{T}[Cones.Nonnegative{T}(length(arcs))]
+
+    objs = T[]
+    for a in (one(T), T(1e6))
+        model = Hypatia.Models.Model{T}(c, A, a * b, G, h, cones)
+        Solvers.load(solver, model)
+        Solvers.solve(solver)
+        @test Solvers.get_status(solver) == Solvers.Optimal
+        push!(objs, Solvers.get_primal_obj(solver) / a)
+    end
+    @test objs[2] ≈ objs[1] rtol = test_tol(T)
+end
+
+function consistent4(T; solver = Solvers.Solver{T}())
+    # a duplicated column makes the dual equalities dependent, and scaling
+    # the costs by a > 0 scales the optimal value by a
+    Random.seed!(1)
+    (n, q) = (10, 15)
+    B = randn(T, q, n)
+    B = hcat(B, B[:, 1])
+    G = vcat(B, -B)
+    c = randn(T, n)
+    c = vcat(c, c[1])
+    A = zeros(T, 0, n + 1)
+    b = T[]
+    h = ones(T, 2 * q)
+    cones = Cone{T}[Cones.Nonnegative{T}(2 * q)]
+
+    objs = T[]
+    for a in (one(T), T(1e9))
+        model = Hypatia.Models.Model{T}(a * c, A, b, G, h, cones)
+        Solvers.load(solver, model)
+        Solvers.solve(solver)
+        @test Solvers.get_status(solver) == Solvers.Optimal
+        push!(objs, Solvers.get_primal_obj(solver) / a)
+    end
+    @test objs[2] ≈ objs[1] rtol = test_tol(T)
+end
+
 function inconsistent1(T; options...)
     Random.seed!(1)
     (n, p, q) = (30, 15, 30)
