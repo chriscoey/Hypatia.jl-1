@@ -1,8 +1,8 @@
 # solve example instances and write one CSV row per instance
 # usage: julia --project=HYP/examples ab_examples.jl HYP OUT.csv FILTER
 # FILTER: "matspec" (instances using MatrixCSqr or EpiTrRelEntropyTri cones) or "all"
-const HYP = ARGS[1]
-const OUT = ARGS[2]
+const HYP = abspath(ARGS[1])
+const OUT = abspath(ARGS[2])
 const FILTER = ARGS[3]
 include(joinpath(HYP, "examples", "Examples.jl"))
 using Printf
