@@ -91,14 +91,13 @@ sep_spectral_funs = [
         end
     end
 
-    # eigenvalues that are close in absolute terms but not relative to their size
+    # eigenvalues that are close relative to their size or only in absolute terms
     @testset "divided differences" begin
         Random.seed!(1)
         rt2 = sqrt(2.0)
         diag_svec(λ) = Cones.smat_to_svec!(zeros(6), diagm(λ), rt2)
 
-        λ = [1e-9, 4e-9, 1]
-        for h in sep_spectral_funs
+        for λ in ([1e-9, 4e-9, 1], [1, 1 + 2e-8, 2]), h in sep_spectral_funs
             point = vcat(Cones.h_val(λ, h) + 1, 1, diag_svec(λ))
             csqr(T) = Cones.EpiPerSepSpectral{Cones.MatrixCSqr{T, T}, T}(h, 3)
             test_oracles_vs_bigfloat(csqr, point, randn(8), 1e-12)
