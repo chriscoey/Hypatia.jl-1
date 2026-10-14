@@ -84,8 +84,8 @@ function is_dual_feas(cone::HypoGeoMean{T}) where {T <: Real}
     u = cone.dual_point[1]
     @views w = cone.dual_point[2:end]
 
-    if (u < -eps(T)) && all(>(eps(T)), w)
-        return (exp(cone.di * sum(log, w)) + cone.di * u > eps(T))
+    if (u < 0) && all(>(0), w)
+        return (exp(cone.di * sum(log, w)) + cone.di * u > 0)
     end
 
     return false

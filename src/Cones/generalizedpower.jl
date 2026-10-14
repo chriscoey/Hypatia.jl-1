@@ -101,10 +101,10 @@ end
 function is_dual_feas(cone::GeneralizedPower{T}) where {T <: Real}
     @views u = cone.dual_point[cone.u_idxs]
 
-    if all(>(eps(T)), u)
+    if all(>(0), u)
         p = exp(2 * sum(α_i * log(u_i / α_i) for (α_i, u_i) in zip(cone.α, u)))
         @views w = cone.dual_point[cone.w_idxs]
-        return (p - sum(abs2, w) > eps(T))
+        return (p - sum(abs2, w) > 0)
     end
 
     return false

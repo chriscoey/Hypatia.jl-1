@@ -99,9 +99,9 @@ function is_dual_feas(cone::HypoPowerMean{T}) where {T <: Real}
     @views w = cone.dual_point[2:end]
     α = cone.α
 
-    if u < -eps(T) && all(>(eps(T)), w)
+    if u < 0 && all(>(0), w)
         sumlog = sum(α_i * log(w_i / α_i) for (α_i, w_i) in zip(α, w))
-        return (exp(sumlog) + u > eps(T))
+        return (exp(sumlog) + u > 0)
     end
 
     return false

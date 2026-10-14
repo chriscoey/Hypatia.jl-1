@@ -120,8 +120,8 @@ function is_dual_feas(cone::EpiRelEntropy{T}) where {T}
     @views v = cone.dual_point[cone.v_idxs]
     @views w = cone.dual_point[cone.w_idxs]
 
-    if all(>(eps(T)), v) && u > eps(T)
-        return all(u * (1 + log(vi / u)) + wi > eps(T) for (vi, wi) in zip(v, w))
+    if all(>(0), v) && u > 0
+        return all(u * (1 + log(vi / u)) + wi > 0 for (vi, wi) in zip(v, w))
     end
 
     return false

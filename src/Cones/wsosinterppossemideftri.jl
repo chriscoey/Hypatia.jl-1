@@ -162,7 +162,7 @@ function is_dual_feas(cone::WSOSInterpPosSemidefTri{T}) where {T}
     block = 1
     @inbounds for i in 1:(cone.R)
         @views diag_i = cone.dual_point[block_idxs(cone.U, block)]
-        all(>(eps(T)), diag_i) || return false
+        all(>(0), diag_i) || return false
         block += i + 1
     end
     return true

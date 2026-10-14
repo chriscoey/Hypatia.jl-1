@@ -78,10 +78,10 @@ end
 function is_dual_feas(cone::EpiNormEucl{T}) where {T}
     u = cone.dual_point[1]
 
-    if u > eps(T)
+    if u > 0
         w = view(cone.dual_point, 2:(cone.dim))
         @views dual_dist = abs2(u) - sum(abs2, cone.dual_point[2:end])
-        return (dual_dist > 2 * eps(T))
+        return (dual_dist > 0)
     end
 
     return false

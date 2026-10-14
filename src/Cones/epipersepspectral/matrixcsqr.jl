@@ -122,7 +122,7 @@ end
 
 function is_dual_feas(cone::EpiPerSepSpectral{MatrixCSqr{T, R}}) where {T, R}
     u = cone.dual_point[1]
-    (u < eps(T)) && return false
+    (u <= 0) && return false
     @views w = cone.dual_point[3:end]
 
     uiw = cone.cache.w1
@@ -136,7 +136,7 @@ function is_dual_feas(cone::EpiPerSepSpectral{MatrixCSqr{T, R}}) where {T, R}
     svec_to_smat!(uiw, w, cone.cache.rt2)
     uiw ./= u
     uiw_λ = eigvals!(Hermitian(uiw, :U))
-    return (cone.dual_point[2] - u * h_conj(uiw_λ, cone.h) > eps(T))
+    return (cone.dual_point[2] - u * h_conj(uiw_λ, cone.h) > 0)
 end
 
 function update_grad(cone::EpiPerSepSpectral{<:MatrixCSqr{T}}) where {T}
