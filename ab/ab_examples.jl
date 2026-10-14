@@ -8,8 +8,9 @@ include(joinpath(HYP, "examples", "Examples.jl"))
 using Printf
 
 const DIRECT = ("relentrentanglement", "entanglementassisted", "nearestcorrelation")
+# formulations that use EpiPerSepSpectral with MatrixCSqr (not the extended or logdet ones)
 is_matspec(x) =
-    x isa Union{Examples.MatSepSpecPrimAll, Examples.MatSepSpecDualAll}
+    x isa Union{Examples.MatSepSpecPrim, Examples.MatSepSpecDual} && !(x isa Examples.MatLogdetCone)
 affected(ex, inst_data) =
     FILTER == "all" || ex in DIRECT || any(is_matspec, inst_data)
 
@@ -44,7 +45,7 @@ for (ex, (ex_type, insts)) in Examples.get_test_instances()["JuMP"]
 end
 for ex in ("experimentdesign", "covarianceest", "centralpolymat")
     ex_type = Examples.get_test_instances("JuMP", ex)[1]
-    for (set, (ext, inst_lists)) in Examples.get_benchmark_instances("JuMP", ex)
+    for (set, (ext, inst_lists)) in Examples.get_benchmark_instances("JuMP", ex)[2]
         for insts in inst_lists
             sel = [i for i in insts if affected(ex, i)]
             for i in first(sel, 5)
@@ -54,6 +55,8 @@ for ex in ("experimentdesign", "covarianceest", "centralpolymat")
     end
 end
 println(length(jobs), " instances")
+get(ENV, "AB_DRY", "") == "1" && (foreach(j -> println(j[1], " ", j[2], " ", j[4]), jobs); exit())
+haskey(ENV, "AB_LIMIT") && (jobs = jobs[1:parse(Int, ENV["AB_LIMIT"])])
 
 # compile the solve path before anything is timed
 run_one(jobs[1][1], "warmup", jobs[1][3], jobs[1][4])
