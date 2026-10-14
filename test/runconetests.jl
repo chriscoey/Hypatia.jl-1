@@ -91,6 +91,26 @@ sep_spectral_funs = [
         end
     end
 
+    # eigenvalues that are close in absolute terms but not relative to their size
+    @testset "divided differences" begin
+        Random.seed!(1)
+        rt2 = sqrt(2.0)
+        diag_svec(λ) = Cones.smat_to_svec!(zeros(6), diagm(λ), rt2)
+
+        λ = [1e-9, 4e-9, 1]
+        for h in sep_spectral_funs
+            point = vcat(Cones.h_val(λ, h) + 1, 1, diag_svec(λ))
+            csqr(T) = Cones.EpiPerSepSpectral{Cones.MatrixCSqr{T, T}, T}(h, 3)
+            test_oracles_vs_bigfloat(csqr, point, randn(8), 1e-12)
+        end
+
+        (λ_V, λ_W) = (1e-6 * [1, 4, 2], 1e-6 * [2, 1, 3])
+        u = sum(w * log(w / v) for (v, w) in zip(λ_V, λ_W)) + 1e-6
+        point = vcat(u, diag_svec(λ_V), diag_svec(λ_W))
+        trrelent(T) = Cones.EpiTrRelEntropyTri{T, T}(13)
+        test_oracles_vs_bigfloat(trrelent, point, randn(13), 1e-12)
+    end
+
     # println("\nstarting barrier tests")
     # @testset "barrier tests" begin
     # real_types = [

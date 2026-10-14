@@ -129,6 +129,29 @@ function test_oracles(
     return
 end
 
+# compare Float64 oracles with BigFloat oracles at the same point
+function test_oracles_vs_bigfloat(
+    make_cone::Function,
+    point::Vector{Float64},
+    dir::Vector{Float64},
+    tol::Real,
+)
+    oracles = map((Float64, BigFloat)) do T
+        cone = make_cone(T)
+        Cones.setup_data!(cone)
+        Cones.load_point(cone, T.(point))
+        @test Cones.is_feas(cone)
+        g = copy(Cones.grad(cone))
+        d = T.(dir)
+        H_d = Cones.hess_prod!(zero(d), d, cone)
+        return (g, H_d, copy(Cones.dder3(cone, d)))
+    end
+    for (o64, obig) in zip(oracles...)
+        @test norm(o64 - obig) <= tol * norm(obig)
+    end
+    return
+end
+
 # check some oracles agree with ForwardDiff
 function test_barrier(
     cone::Cones.Cone{T},
