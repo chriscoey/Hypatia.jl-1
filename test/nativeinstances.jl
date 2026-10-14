@@ -175,6 +175,7 @@ function consistent2(T; options...)
         @test r.status == Solvers.Optimal
         @test r.primal_obj ≈ -dot(b, y_opt) atol = tol rtol = tol
     end
+end
 
 function consistent3(T; solver = Solvers.Solver{T}())
     # min cost flow: the node balance rows are dependent, and scaling the
