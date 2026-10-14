@@ -147,6 +147,36 @@ function consistent1(T; options...)
     @test r.status == Solvers.Optimal
 end
 
+function consistent2(T; options...)
+    # known optimal value -dot(b, y_opt); sparse A is factorized by sparse QR,
+    # which permutes the variables
+    tol = test_tol(T)
+    A = T[
+        0 1 0 1 1 0
+        1 0 1 0 0 1
+        0 1 1 0 1 0
+    ]
+    x_opt = T[1, 1, 1, 0, 0, 0]
+    y_opt = T[1, -2, 1]
+    z_opt = T[0, 0, 0, 1, 2, 3]
+    b = A * x_opt
+    c = z_opt - A' * y_opt
+    G = Matrix{T}(-I, 6, 6)
+    h = zeros(T, 6)
+    cones = Cone{T}[Cones.Nonnegative{T}(6)]
+
+    for use_sparse in (false, true)
+        if use_sparse
+            T <: BlasReal || continue
+            A = sparse(A)
+            G = sparse(G)
+        end
+        r = build_solve_check(c, A, b, G, h, cones, tol; options...)
+        @test r.status == Solvers.Optimal
+        @test r.primal_obj ≈ -dot(b, y_opt) atol = tol rtol = tol
+    end
+end
+
 function inconsistent1(T; options...)
     Random.seed!(1)
     (n, p, q) = (30, 15, 30)

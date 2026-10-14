@@ -53,6 +53,21 @@ end
         end
     end
 
+    @testset "sparse preprocessing tests" begin
+        println("\nstarting sparse preprocessing tests")
+        if Hypatia.USE_GPL_LIBS
+            for inst_name in inst_preproc, reduce in (false, true)
+                T = Float64
+                options = (;
+                    default_options...,
+                    syssolver = Solvers.SymIndefSparseSystemSolver{T}(),
+                    reduce = reduce,
+                )
+                test_instance_solver(inst_name, T, options, "reduce=$reduce")
+            end
+        end
+    end
+
     @testset "no preprocess tests" begin
         println("\nstarting no preprocess tests")
         for inst_name in inst_cones_few

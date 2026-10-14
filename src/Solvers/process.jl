@@ -377,6 +377,9 @@ function update_primal_eq(solver::Solver{T}, init_z::Vector{T}) where {T <: Real
     # reduce
     # [cQ1 cQ2] = c0' * Q
     # c = cQ2
+    if !(Ap_fact isa QRPivoted{T, Matrix{T}})
+        model.c = model.c[Ap_fact.prow]
+    end
     cQ = model.c' * solver.reduce_Ap_Q
     cQ1 = solver.reduce_cQ1 = cQ[1:Ap_rank]
     model.c = cQ[(Ap_rank + 1):end]
