@@ -92,6 +92,7 @@ function handle_dual_eq(solver::Solver{T}) where {T <: Real}
     else
         vcat(A, G)
     end
+    AG_norm = opnorm(AG, 1)
     AG_fact =
         solver.AG_fact = if issparse(AG)
             if !(USE_GPL_LIBS && T <: Float64)
@@ -141,12 +142,14 @@ function handle_dual_eq(solver::Solver{T}) where {T <: Real}
     @views mul!(residual, G', yz_sub[(p + 1):end], true, -1)
     @views mul!(residual, A', yz_sub[1:p], true, true)
     res_norm = norm(residual, Inf)
+    # tolerance on the normwise backward error of the least squares solution
+    res_tol = solver.tol_inconsistent * (AG_norm * norm(yz_sub, Inf) + norm(model.c, Inf))
 
-    if res_norm > solver.tol_inconsistent
+    if res_norm > res_tol
         if solver.verbose
             println(
                 "some dual equality constraints are inconsistent " *
-                "(residual norm $res_norm, tolerance $(solver.tol_inconsistent))",
+                "(residual norm $res_norm, tolerance $res_tol)",
             )
         end
         solver.status = DualInconsistent
@@ -262,12 +265,16 @@ function handle_primal_eq(solver::Solver{T}) where {T <: Real}
             x_sub = x_sub[Ap_fact.rpivinv]
         end
         residual = norm(model.A * x_sub - model.b, Inf)
+        # tolerance on the normwise backward error of the least squares solution
+        res_tol =
+            solver.tol_inconsistent *
+            (opnorm(model.A, Inf) * norm(x_sub, Inf) + norm(model.b, Inf))
 
-        if residual > solver.tol_inconsistent
+        if residual > res_tol
             if solver.verbose
                 println(
                     "some primal equality constraints are inconsistent " *
-                    "(residual $residual, tolerance $(solver.tol_inconsistent))",
+                    "(residual $residual, tolerance $res_tol)",
                 )
             end
             solver.status = PrimalInconsistent
