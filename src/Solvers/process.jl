@@ -192,6 +192,9 @@ function update_dual_eq(solver::Solver{T}, init_s::Vector{T}) where {T <: Real}
     end
 
     # init_x = AG_R \ ((AG_fact.Q' * vcat(b, h - point.s))[1:AG_rank])
+    if !(AG_fact isa QRPivoted{T, Matrix{T}})
+        rhs_x = rhs_x[AG_fact.prow]
+    end
     lmul!(AG_fact.Q', rhs_x)
     init_x = rhs_x[1:(model.n)]
     ldiv!(solver.AG_R, init_x)
