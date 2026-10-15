@@ -553,6 +553,7 @@ function Δ3!(Δ3::Array{T, 3}, Δ2::Matrix{T}, λ::Vector{T}) where {T <: Real}
             if abs(λ_ij) < thresh * max(λ_i, λ_j)
                 t = abs2(3 / (λ_i + λ_j + λ_k)) / -2
             else
+                # λ is sorted, so λ_i - λ_k is the widest of the three gaps
                 t = (Δ2[i, j] - Δ2[j, k]) / (λ_i - λ_k)
             end
         else
