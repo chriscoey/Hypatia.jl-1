@@ -57,16 +57,24 @@ include(joinpath(@__DIR__, "moicones.jl"))
             zero(MOI.ScalarAffineFunction{Float64})+4.0 -1.0*x[1]
         ]
         func = MOI.Utilities.vectorize(vcat(1.0 * t, vec(W)))
-        MOI.add_constraint(src, func, S(3, 2))
+        ci = MOI.add_constraint(src, func, S(3, 2))
         MOI.set(src, MOI.ObjectiveSense(), MOI.MIN_SENSE)
         obj = 1.0 * t
         MOI.set(src, MOI.ObjectiveFunction{typeof(obj)}(), obj)
         model = Hypatia.Optimizer()
         MOI.set(model, MOI.Silent(), true)
-        MOI.copy_to(model, src)
+        index_map = MOI.copy_to(model, src)
         MOI.optimize!(model)
         @test MOI.get(model, MOI.TerminationStatus()) == MOI.OPTIMAL
         @test MOI.get(model, MOI.ObjectiveValue()) ≈ f(W0) rtol = 1e-6
+
+        # change the constants of W[3, 1] and W[2, 2]
+        new_consts = [0.0, 0, 0, -1, 0, 1, 0]
+        MOI.modify(model, index_map[ci], MOI.VectorConstantChange(new_consts))
+        MOI.optimize!(model)
+        W1 = W0 + [0 0; 0 1; -5 0]
+        @test MOI.get(model, MOI.TerminationStatus()) == MOI.OPTIMAL
+        @test MOI.get(model, MOI.ObjectiveValue()) ≈ f(W1) rtol = 1e-6
     end
 
     # real types, tolerances, and tests to include for MOI.Test tests

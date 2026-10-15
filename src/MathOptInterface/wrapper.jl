@@ -276,7 +276,7 @@ function MOI.modify(
         rescale_affine(set, new_h)
     end
     if needs_permute(set)
-        new_h = h[permute_idxs(set)]
+        new_h = new_h[permute_idxs(set)]
     end
     Solvers.modify_h(opt.solver, idxs, new_h)
     return
