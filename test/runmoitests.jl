@@ -77,6 +77,30 @@ include(joinpath(@__DIR__, "moicones.jl"))
         @test MOI.get(model, MOI.ObjectiveValue()) ≈ f(W1) rtol = 1e-6
     end
 
+    @testset "Hermitian PSD constant change" begin
+        src = MOI.Utilities.Model{Float64}()
+        t = MOI.add_variable(src)
+        terms = [MOI.VectorAffineTerm(i, MOI.ScalarAffineTerm(1.0, t)) for i in (1, 3)]
+        func = MOI.VectorAffineFunction(terms, [1.0, 2.0, 3.0, 1.0])
+        S = MOI.HermitianPositiveSemidefiniteConeTriangle(2)
+        ci = MOI.add_constraint(src, func, S)
+        MOI.set(src, MOI.ObjectiveSense(), MOI.MIN_SENSE)
+        obj = 1.0 * t
+        MOI.set(src, MOI.ObjectiveFunction{typeof(obj)}(), obj)
+        model = Hypatia.Optimizer()
+        MOI.set(model, MOI.Silent(), true)
+        index_map = MOI.copy_to(model, src)
+        MOI.optimize!(model)
+
+        # t * I + [0 1+3im; 1-3im 0] is PSD iff t >= sqrt(10)
+        new_consts = [0.0, 1, 0, 3]
+        MOI.modify(model, index_map[ci], MOI.VectorConstantChange(new_consts))
+        @test new_consts == [0, 1, 0, 3]
+        MOI.optimize!(model)
+        @test MOI.get(model, MOI.TerminationStatus()) == MOI.OPTIMAL
+        @test MOI.get(model, MOI.ObjectiveValue()) ≈ sqrt(10) rtol = 1e-6
+    end
+
     # real types, tolerances, and tests to include for MOI.Test tests
     test_T = [
         (Float64, 2 * sqrt(sqrt(eps())), 4, String[], String[]),

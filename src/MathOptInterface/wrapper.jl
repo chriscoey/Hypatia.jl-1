@@ -271,7 +271,7 @@ function MOI.modify(
     i = ci.value
     idxs = opt.moi_cone_idxs[i]
     set = opt.moi_cones[i]
-    new_h = chg.new_constant
+    new_h = copy(chg.new_constant)
     if needs_rescale(set)
         rescale_affine(set, new_h)
     end
