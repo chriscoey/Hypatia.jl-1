@@ -174,6 +174,24 @@ function consistent2(T; options...)
         r = build_solve_check(c, A, b, G, h, cones, tol; options...)
         @test r.status == Solvers.Optimal
         @test r.primal_obj ≈ -dot(b, y_opt) atol = tol rtol = tol
+
+        # doubling c doubles the optimal value
+        solver = r.solver
+        Solvers.modify_c(solver, 2 * c)
+        r = build_solve_check(
+            2 * c,
+            A,
+            b,
+            G,
+            h,
+            cones,
+            tol;
+            solver = solver,
+            already_loaded = true,
+            options...,
+        )
+        @test r.status == Solvers.Optimal
+        @test r.primal_obj ≈ -2 * dot(b, y_opt) atol = tol rtol = tol
     end
 end
 
