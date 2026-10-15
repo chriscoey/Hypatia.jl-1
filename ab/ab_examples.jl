@@ -17,10 +17,29 @@ affected(ex, inst_data) =
 const OPTS = (verbose = false, default_tol_relax = 10, iter_limit = 250, time_limit = 600.0)
 const FIELDS = (:status, :iters, :solve_time, :primal_obj, :dual_obj, :x_viol, :y_viol, :z_viol, :compl, :rel_obj_diff)
 
-open(io -> println(io, join(("example", "set", "inst", FIELDS..., "error"), ",")), OUT, "w")
+# resume: keep rows already written; an instance in progress when the process died is recorded as Killed
+const INPROG = OUT * ".inprogress"
+done_keys = Set{Tuple{String, String}}()
+if isfile(OUT)
+    for l in readlines(OUT)[2:end]
+        f = split(l, ",")
+        push!(done_keys, (f[1], f[3]))
+    end
+else
+    open(io -> println(io, join(("example", "set", "inst", FIELDS..., "error"), ",")), OUT, "w")
+end
+if isfile(INPROG)
+    (ex, set, inst_str) = split(read(INPROG, String), "\t")
+    open(io -> println(io, join((ex, set, inst_str, "Killed", (missing for _ in 2:length(FIELDS))..., "process killed"), ",")), OUT, "a")
+    push!(done_keys, (ex, inst_str))
+    rm(INPROG)
+end
+
+inst_key(args) = replace(string(args), "," => ";", "\"" => "")
 
 function run_one(ex, set, ex_type, args)
-    inst_str = replace(string(args), "," => ";", "\"" => "")
+    inst_str = inst_key(args)
+    write(INPROG, join((ex, set, inst_str), "\t"))
     vals = Any[missing for _ in FIELDS]
     err = ""
     try
@@ -29,7 +48,9 @@ function run_one(ex, set, ex_type, args)
     catch e
         err = replace(first(sprint(showerror, e), 120), "," => ";", "\n" => " ")
     end
-    open(io -> println(io, join((ex, set, inst_str, vals..., err), ",")), OUT, "a")
+    set == "warmup" || open(io -> println(io, join((ex, set, inst_str, vals..., err), ",")), OUT, "a")
+    rm(INPROG)
+    GC.gc()
     @printf("%-22s %-8s %-50s %s it=%s t=%s %s\n", ex, set, first(inst_str, 50), vals[1], vals[2], vals[3], err)
     flush(stdout)
 end
@@ -66,5 +87,6 @@ haskey(ENV, "AB_LIMIT") && (jobs = jobs[1:parse(Int, ENV["AB_LIMIT"])])
 # compile the solve path before anything is timed
 run_one(jobs[1][1], "warmup", jobs[1][3], jobs[1][4])
 for (ex, set, ex_type, args) in jobs
+    (ex, inst_key(args)) in done_keys && continue
     run_one(ex, set, ex_type, args)
 end
