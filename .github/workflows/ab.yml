@@ -10,7 +10,7 @@ jobs:
       fail-fast: false
       matrix:
         arm: [base, head]
-        shard: [3]
+        shard: [1, 2, 5, 7]
     steps:
       - uses: actions/checkout@v7
         with:
