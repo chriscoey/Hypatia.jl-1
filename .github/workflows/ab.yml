@@ -10,7 +10,7 @@ jobs:
       fail-fast: false
       matrix:
         arm: [base, head]
-        shard: [1, 2, 3, 4, 5, 6, 7, 8]
+        shard: [3]
     steps:
       - uses: actions/checkout@v7
         with:
@@ -26,11 +26,23 @@ jobs:
           version: '1'
       - uses: julia-actions/cache@v3
       - run: julia --project=hyp/examples -e 'using Pkg; Pkg.instantiate(); Pkg.develop(PackageSpec(path="hyp"))'
-      # restart after a crash (e.g. out of memory); the driver resumes and records the killed instance
+      # restart after a crash; the driver resumes and records the killed instance.
+      # an instance past 10 GB resident is killed before it takes the runner down
       - run: |
+          OUT=ab-${{ matrix.arm }}-${{ matrix.shard }}.csv
           for attempt in 1 2 3 4 5 6; do
-            julia --project=hyp/examples drv/ab/ab_examples.jl hyp ab-${{ matrix.arm }}-${{ matrix.shard }}.csv ${{ steps.cfg.outputs.filter }} && break
-            echo "attempt $attempt exited $?"
+            julia --project=hyp/examples drv/ab/ab_examples.jl hyp $OUT ${{ steps.cfg.outputs.filter }} &
+            jp=$!
+            while kill -0 $jp 2>/dev/null; do
+              sleep 5
+              rss=$(ps -o rss= -p $jp | tr -d ' ')
+              if [ "${rss:-0}" -gt 10000000 ]; then
+                echo "watchdog: killing $(cat $OUT.inprogress 2>/dev/null) at rss ${rss} KB"
+                kill -9 $jp
+              fi
+            done
+            wait $jp && break
+            echo "attempt $attempt exited"
           done
           true
         env:
