@@ -15,16 +15,24 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: ['1']
-        os: [ubuntu-latest]
-        arch: [x64]
-        test_files: ['polyutils;cone;native', 'moi']
         include:
+          - version: '1'
+            os: ubuntu-latest
+            arch: x64
+            test_files: 'polyutils;cone;native'
+          - version: '1'
+            os: ubuntu-latest
+            arch: x64
+            test_files: 'moi'
           # the cone tests check math that doesn't depend on the Julia version
           - version: '1.10'
             os: ubuntu-latest
             arch: x64
-            test_files: 'polyutils;native;moi'
+            test_files: 'polyutils;native'
+          - version: '1.10'
+            os: ubuntu-latest
+            arch: x64
+            test_files: 'moi'
     steps:
       - uses: actions/checkout@v7
       - uses: julia-actions/setup-julia@v3
