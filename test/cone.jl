@@ -774,6 +774,13 @@ function test_oracles(C::Type{<:Cones.EpiTrRelEntropyTri{T, R}}) where {T, R}
     end
     # small eigenvalues
     test_oracles(C(1 + 2 * Cones.svec_length(R, 4)), init_tol = 1e-4, scale = T(1e-6))
+    # clustered eigenvalues, where the near-equal formulas lose some accuracy
+    test_oracles(
+        C(1 + 2 * Cones.svec_length(R, 4)),
+        init_tol = 1e-4,
+        noise = T(1e-2),
+        tol = 1e-7,
+    )
     for dW in [6, 10]
         test_oracles(C(1 + 2 * Cones.svec_length(R, dW)), init_tol = 1e-1, init_only = true)
     end
