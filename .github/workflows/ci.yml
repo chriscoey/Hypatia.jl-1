@@ -18,7 +18,11 @@ jobs:
         version: ['1.10', '1']
         os: [ubuntu-latest]
         arch: [x64]
-        test_files: ['polyutils;cone;native', 'moi']
+        test_files: ['cone', 'polyutils;native', 'moi']
+        exclude:
+          # the cone oracle tests check math that doesn't depend on the Julia version
+          - version: '1.10'
+            test_files: 'cone'
     steps:
       - uses: actions/checkout@v7
       - uses: julia-actions/setup-julia@v3
